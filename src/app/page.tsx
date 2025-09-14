@@ -185,7 +185,7 @@ export default function Home() {
       </div>
 
       <div className="mb-8">
-        <div className={`flex items-center border-2 rounded-lg overflow-hidden transition-colors w-1/3 ${
+        <div className={`flex items-center border-2 rounded-lg overflow-hidden transition-colors w-full md:w-1/2 lg:w-1/3 ${
           searchTerm
             ? 'border-[#265b4e] focus-within:ring-2 focus-within:ring-[#265b4e] focus-within:ring-opacity-20'
             : 'border-gray-300 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent'

@@ -14,6 +14,9 @@ export async function GET(request: Request) {
   let filteredData = advocateData;
   if (search) {
     const searchLower = search.toLowerCase();
+    // Strip formatting characters from search term for phone number matching
+    const searchDigitsOnly = search.replace(/[^\d]/g, '');
+
     filteredData = advocateData.filter((advocate) => {
       return (
         advocate.firstName.toLowerCase().includes(searchLower) ||
@@ -21,7 +24,9 @@ export async function GET(request: Request) {
         advocate.city.toLowerCase().includes(searchLower) ||
         advocate.degree.toLowerCase().includes(searchLower) ||
         advocate.specialties.some(s => s.toLowerCase().includes(searchLower)) ||
-        advocate.yearsOfExperience.toString().includes(search)
+        advocate.yearsOfExperience.toString().includes(search) ||
+        // Search phone number as digits only
+        (searchDigitsOnly && advocate.phoneNumber.toString().includes(searchDigitsOnly))
       );
     });
   }
