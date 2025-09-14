@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo, memo } from "react";
+import { useEffect, useState, useCallback, memo } from "react";
 
 interface Advocate {
   firstName: string;
@@ -104,26 +104,12 @@ export default function Home() {
     hasPreviousPage: false,
   });
 
-  const filteredAdvocates = useMemo(() => {
-    if (!searchTerm) return advocates;
-
-    return advocates.filter((advocate) => {
-      return (
-        advocate.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        advocate.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        advocate.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        advocate.degree.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        advocate.specialties.some(s => s.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        advocate.yearsOfExperience.toString().includes(searchTerm)
-      );
-    });
-  }, [advocates, searchTerm]);
-
   const fetchAdvocates = useCallback(async () => {
     console.log("fetching advocates...");
     try {
+      const searchParam = searchTerm ? `&search=${encodeURIComponent(searchTerm)}` : '';
       const response = await fetch(
-        `/api/advocates?page=${currentPage}&limit=${pageSize}`
+        `/api/advocates?page=${currentPage}&limit=${pageSize}${searchParam}`
       );
       const jsonResponse = await response.json();
       setAdvocates(jsonResponse.data);
@@ -131,7 +117,7 @@ export default function Home() {
     } catch (error) {
       console.error("Error fetching advocates:", error);
     }
-  }, [currentPage, pageSize]);
+  }, [currentPage, pageSize, searchTerm]);
 
   useEffect(() => {
     fetchAdvocates();
@@ -140,6 +126,7 @@ export default function Home() {
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newSearchTerm = e.target.value;
     setSearchTerm(newSearchTerm);
+    setCurrentPage(1); // Reset to first page when searching
 
     const searchTermElement = document.getElementById("search-term");
     if (searchTermElement) {
@@ -149,6 +136,7 @@ export default function Home() {
 
   const onClick = () => {
     setSearchTerm('');
+    setCurrentPage(1); // Reset to first page when clearing search
     const searchTermElement = document.getElementById("search-term");
     if (searchTermElement) {
       searchTermElement.innerHTML = '';
@@ -240,7 +228,7 @@ export default function Home() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {filteredAdvocates.map((advocate) => (
+            {advocates.map((advocate) => (
               <AdvocateRow
                 key={`${advocate.firstName}-${advocate.lastName}-${advocate.phoneNumber}`}
                 advocate={advocate}
