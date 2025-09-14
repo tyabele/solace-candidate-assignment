@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 export default function Home() {
   const [advocates, setAdvocates] = useState([]);
@@ -11,13 +11,15 @@ export default function Home() {
     totalCount: 0,
     totalPages: 0,
     hasNextPage: false,
-    hasPreviousPage: false
+    hasPreviousPage: false,
   });
 
-  const fetchAdvocates = async (page = currentPage, limit = pageSize) => {
+  const fetchAdvocates = useCallback(async () => {
     console.log("fetching advocates...");
     try {
-      const response = await fetch(`/api/advocates?page=${page}&limit=${limit}`);
+      const response = await fetch(
+        `/api/advocates?page=${currentPage}&limit=${pageSize}`
+      );
       const jsonResponse = await response.json();
       setAdvocates(jsonResponse.data);
       setFilteredAdvocates(jsonResponse.data);
@@ -25,11 +27,11 @@ export default function Home() {
     } catch (error) {
       console.error("Error fetching advocates:", error);
     }
-  };
+  }, [currentPage, pageSize]);
 
   useEffect(() => {
     fetchAdvocates();
-  }, [currentPage, pageSize]);
+  }, [fetchAdvocates]);
 
   const onChange = (e) => {
     const searchTerm = e.target.value;
@@ -70,7 +72,10 @@ export default function Home() {
     const pages = [];
     const maxPagesToShow = 5;
     const startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
-    const endPage = Math.min(pagination.totalPages, startPage + maxPagesToShow - 1);
+    const endPage = Math.min(
+      pagination.totalPages,
+      startPage + maxPagesToShow - 1
+    );
 
     for (let i = startPage; i <= endPage; i++) {
       pages.push(i);
@@ -80,12 +85,15 @@ export default function Home() {
 
   return (
     <main className="p-6 max-w-7xl mx-auto">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Solace Advocates</h1>
+      <h1 className="text-3xl font-bold text-gray-900 mb-8">
+        Solace Advocates
+      </h1>
 
       <div className="mb-8 space-y-4">
         <h2 className="text-xl font-semibold text-gray-700">Search</h2>
         <p className="text-sm text-gray-600">
-          Searching for: <span id="search-term" className="font-medium text-gray-900"></span>
+          Searching for:{" "}
+          <span id="search-term" className="font-medium text-gray-900"></span>
         </p>
         <div className="flex gap-3 items-center">
           <input
@@ -106,32 +114,63 @@ export default function Home() {
         <table className="min-w-full divide-y divide-gray-200 border border-gray-200 rounded-lg">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">First Name</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Name</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">City</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Degree</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Specialties</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Years of Experience</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone Number</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                First Name
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Last Name
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                City
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Degree
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Specialties
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Years of Experience
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Phone Number
+              </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {filteredAdvocates.map((advocate, index) => {
               return (
                 <tr key={index} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{advocate.firstName}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{advocate.lastName}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{advocate.city}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{advocate.degree}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {advocate.firstName}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {advocate.lastName}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {advocate.city}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {advocate.degree}
+                  </td>
                   <td className="px-6 py-4 text-sm text-gray-500">
                     <div className="space-y-1">
                       {advocate.specialties.map((s, i) => (
-                        <div key={i} className="text-xs bg-gray-100 px-2 py-1 rounded inline-block mr-1 mb-1">{s}</div>
+                        <div
+                          key={i}
+                          className="text-xs bg-gray-100 px-2 py-1 rounded inline-block mr-1 mb-1"
+                        >
+                          {s}
+                        </div>
                       ))}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{advocate.yearsOfExperience}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{advocate.phoneNumber}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {advocate.yearsOfExperience}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {advocate.phoneNumber}
+                  </td>
                 </tr>
               );
             })}
@@ -158,8 +197,10 @@ export default function Home() {
 
         <div className="flex items-center space-x-2">
           <span className="text-sm text-gray-700">
-            Showing {Math.min((currentPage - 1) * pageSize + 1, pagination.totalCount)} to{' '}
-            {Math.min(currentPage * pageSize, pagination.totalCount)} of {pagination.totalCount} results
+            Showing{" "}
+            {Math.min((currentPage - 1) * pageSize + 1, pagination.totalCount)}{" "}
+            to {Math.min(currentPage * pageSize, pagination.totalCount)} of{" "}
+            {pagination.totalCount} results
           </span>
         </div>
 
@@ -185,8 +226,8 @@ export default function Home() {
               onClick={() => handlePageChange(pageNum)}
               className={`px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                 pageNum === currentPage
-                  ? 'bg-blue-500 text-white border-blue-500'
-                  : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                  ? "bg-blue-500 text-white border-blue-500"
+                  : "border-gray-300 text-gray-700 hover:bg-gray-50"
               }`}
             >
               {pageNum}
