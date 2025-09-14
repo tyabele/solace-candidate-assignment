@@ -12,40 +12,82 @@ interface Advocate {
   phoneNumber: number;
 }
 
-const AdvocateRow = memo(({ advocate }: { advocate: Advocate }) => (
-  <tr className="hover:bg-gray-50">
-    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-      {advocate.firstName}
-    </td>
-    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-      {advocate.lastName}
-    </td>
-    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-      {advocate.city}
-    </td>
-    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-      {advocate.degree}
-    </td>
-    <td className="px-6 py-4 text-sm text-gray-500">
-      <div className="space-y-1">
-        {advocate.specialties.map((s, i) => (
-          <div
-            key={`${advocate.firstName}-${advocate.lastName}-${s}-${i}`}
-            className="text-xs bg-gray-100 px-2 py-1 rounded inline-block mr-1 mb-1"
-          >
-            {s}
-          </div>
-        ))}
-      </div>
-    </td>
-    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-      {advocate.yearsOfExperience}
-    </td>
-    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-      {advocate.phoneNumber}
-    </td>
-  </tr>
-));
+const AdvocateRow = memo(({ advocate, openTooltip, onTooltipToggle }: {
+  advocate: Advocate;
+  openTooltip: string | null;
+  onTooltipToggle: (advocateId: string) => void;
+}) => {
+  const advocateId = `${advocate.firstName}-${advocate.lastName}-${advocate.phoneNumber}`;
+  const showTooltip = openTooltip === advocateId;
+
+  return (
+    <tr className="hover:bg-gray-50">
+      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+        {advocate.firstName}
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+        {advocate.lastName}
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+        {advocate.city}
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+        {advocate.degree}
+      </td>
+      <td className="px-6 py-4 text-sm text-gray-500 relative">
+        <div className="space-y-1">
+          {advocate.specialties.slice(0, 2).map((s, i) => (
+            <div
+              key={`${advocate.firstName}-${advocate.lastName}-${s}-${i}`}
+              className="text-xs bg-gray-100 px-2 py-1 rounded inline-block mr-1 mb-1"
+            >
+              {s}
+            </div>
+          ))}
+          {advocate.specialties.length > 2 && (
+            <div className="relative inline-block">
+              <button
+                onClick={() => onTooltipToggle(advocateId)}
+                className="text-xs text-blue-500 hover:text-blue-700 underline cursor-pointer inline-block mr-1 mb-1"
+              >
+                +{advocate.specialties.length - 2} more...
+              </button>
+              {showTooltip && (
+                <div className="absolute z-10 bg-white border border-gray-200 rounded-lg shadow-lg p-3 mt-1 min-w-64 max-w-80">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm font-medium text-gray-900">All Specialties</span>
+                    <button
+                      onClick={() => onTooltipToggle('')}
+                      className="text-gray-400 hover:text-gray-600"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  <div className="space-y-1">
+                    {advocate.specialties.map((s, i) => (
+                      <div
+                        key={`tooltip-${advocate.firstName}-${advocate.lastName}-${s}-${i}`}
+                        className="text-xs bg-gray-50 px-2 py-1 rounded inline-block mr-1 mb-1"
+                      >
+                        {s}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+        {advocate.yearsOfExperience}
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+        {advocate.phoneNumber}
+      </td>
+    </tr>
+  );
+});
 
 AdvocateRow.displayName = 'AdvocateRow';
 
@@ -54,6 +96,7 @@ export default function Home() {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [openTooltip, setOpenTooltip] = useState<string | null>(null);
   const [pagination, setPagination] = useState({
     totalCount: 0,
     totalPages: 0,
@@ -110,6 +153,10 @@ export default function Home() {
     if (searchTermElement) {
       searchTermElement.innerHTML = '';
     }
+  };
+
+  const handleTooltipToggle = (advocateId: string) => {
+    setOpenTooltip(openTooltip === advocateId ? null : advocateId);
   };
 
   const handlePageSizeChange = (e) => {
@@ -197,6 +244,8 @@ export default function Home() {
               <AdvocateRow
                 key={`${advocate.firstName}-${advocate.lastName}-${advocate.phoneNumber}`}
                 advocate={advocate}
+                openTooltip={openTooltip}
+                onTooltipToggle={handleTooltipToggle}
               />
             ))}
           </tbody>
