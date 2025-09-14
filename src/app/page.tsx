@@ -1,10 +1,57 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo, memo } from "react";
+
+interface Advocate {
+  firstName: string;
+  lastName: string;
+  city: string;
+  degree: string;
+  specialties: string[];
+  yearsOfExperience: number;
+  phoneNumber: number;
+}
+
+const AdvocateRow = memo(({ advocate }: { advocate: Advocate }) => (
+  <tr className="hover:bg-gray-50">
+    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+      {advocate.firstName}
+    </td>
+    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+      {advocate.lastName}
+    </td>
+    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+      {advocate.city}
+    </td>
+    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+      {advocate.degree}
+    </td>
+    <td className="px-6 py-4 text-sm text-gray-500">
+      <div className="space-y-1">
+        {advocate.specialties.map((s, i) => (
+          <div
+            key={`${advocate.firstName}-${advocate.lastName}-${s}-${i}`}
+            className="text-xs bg-gray-100 px-2 py-1 rounded inline-block mr-1 mb-1"
+          >
+            {s}
+          </div>
+        ))}
+      </div>
+    </td>
+    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+      {advocate.yearsOfExperience}
+    </td>
+    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+      {advocate.phoneNumber}
+    </td>
+  </tr>
+));
+
+AdvocateRow.displayName = 'AdvocateRow';
 
 export default function Home() {
-  const [advocates, setAdvocates] = useState([]);
-  const [filteredAdvocates, setFilteredAdvocates] = useState([]);
+  const [advocates, setAdvocates] = useState<Advocate[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [pagination, setPagination] = useState({
@@ -14,6 +61,21 @@ export default function Home() {
     hasPreviousPage: false,
   });
 
+  const filteredAdvocates = useMemo(() => {
+    if (!searchTerm) return advocates;
+
+    return advocates.filter((advocate) => {
+      return (
+        advocate.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        advocate.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        advocate.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        advocate.degree.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        advocate.specialties.some(s => s.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        advocate.yearsOfExperience.toString().includes(searchTerm)
+      );
+    });
+  }, [advocates, searchTerm]);
+
   const fetchAdvocates = useCallback(async () => {
     console.log("fetching advocates...");
     try {
@@ -22,7 +84,6 @@ export default function Home() {
       );
       const jsonResponse = await response.json();
       setAdvocates(jsonResponse.data);
-      setFilteredAdvocates(jsonResponse.data);
       setPagination(jsonResponse.pagination);
     } catch (error) {
       console.error("Error fetching advocates:", error);
@@ -33,29 +94,22 @@ export default function Home() {
     fetchAdvocates();
   }, [fetchAdvocates]);
 
-  const onChange = (e) => {
-    const searchTerm = e.target.value;
+  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newSearchTerm = e.target.value;
+    setSearchTerm(newSearchTerm);
 
-    document.getElementById("search-term").innerHTML = searchTerm;
-
-    console.log("filtering advocates...");
-    const filteredAdvocates = advocates.filter((advocate) => {
-      return (
-        advocate.firstName.includes(searchTerm) ||
-        advocate.lastName.includes(searchTerm) ||
-        advocate.city.includes(searchTerm) ||
-        advocate.degree.includes(searchTerm) ||
-        advocate.specialties.includes(searchTerm) ||
-        advocate.yearsOfExperience.toString().includes(searchTerm)
-      );
-    });
-
-    setFilteredAdvocates(filteredAdvocates);
+    const searchTermElement = document.getElementById("search-term");
+    if (searchTermElement) {
+      searchTermElement.innerHTML = newSearchTerm;
+    }
   };
 
   const onClick = () => {
-    console.log(advocates);
-    setFilteredAdvocates(advocates);
+    setSearchTerm('');
+    const searchTermElement = document.getElementById("search-term");
+    if (searchTermElement) {
+      searchTermElement.innerHTML = '';
+    }
   };
 
   const handlePageSizeChange = (e) => {
@@ -99,6 +153,7 @@ export default function Home() {
           <input
             className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder="Search advocates..."
+            value={searchTerm}
             onChange={onChange}
           />
           <button
@@ -138,42 +193,12 @@ export default function Home() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {filteredAdvocates.map((advocate, index) => {
-              return (
-                <tr key={index} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {advocate.firstName}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {advocate.lastName}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {advocate.city}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {advocate.degree}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">
-                    <div className="space-y-1">
-                      {advocate.specialties.map((s, i) => (
-                        <div
-                          key={i}
-                          className="text-xs bg-gray-100 px-2 py-1 rounded inline-block mr-1 mb-1"
-                        >
-                          {s}
-                        </div>
-                      ))}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {advocate.yearsOfExperience}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {advocate.phoneNumber}
-                  </td>
-                </tr>
-              );
-            })}
+            {filteredAdvocates.map((advocate) => (
+              <AdvocateRow
+                key={`${advocate.firstName}-${advocate.lastName}-${advocate.phoneNumber}`}
+                advocate={advocate}
+              />
+            ))}
           </tbody>
         </table>
       </div>
