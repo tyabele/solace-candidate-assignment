@@ -13,6 +13,12 @@ interface Advocate {
   phoneNumber: number;
 }
 
+const formatPhoneNumber = (phoneNumber: number): string => {
+  const phoneStr = phoneNumber.toString();
+  // Format as (XXX) XXX-XXXX
+  return `(${phoneStr.slice(0, 3)}) ${phoneStr.slice(3, 6)}-${phoneStr.slice(6)}`;
+};
+
 const AdvocateRow = memo(({ advocate, openTooltip, onTooltipToggle }: {
   advocate: Advocate;
   openTooltip: string | null;
@@ -84,7 +90,12 @@ const AdvocateRow = memo(({ advocate, openTooltip, onTooltipToggle }: {
         {advocate.yearsOfExperience}
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-        {advocate.phoneNumber}
+        <a
+          href={`tel:${advocate.phoneNumber}`}
+          className="text-blue-600 hover:text-blue-800 hover:underline"
+        >
+          {formatPhoneNumber(advocate.phoneNumber)}
+        </a>
       </td>
     </tr>
   );
