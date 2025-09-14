@@ -29,24 +29,24 @@ const AdvocateRow = memo(({ advocate, openTooltip, onTooltipToggle }: {
 
   return (
     <tr className="hover:bg-gray-50">
-      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+      <td className="w-32 px-4 py-4 text-sm font-medium text-gray-900 border-r border-gray-200 truncate">
         {advocate.firstName}
       </td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+      <td className="w-32 px-4 py-4 text-sm font-medium text-gray-900 border-r border-gray-200 truncate">
         {advocate.lastName}
       </td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+      <td className="w-28 px-4 py-4 text-sm text-gray-600 border-r border-gray-200 truncate">
         {advocate.city}
       </td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+      <td className="w-24 px-4 py-4 text-sm text-gray-600 border-r border-gray-200 truncate">
         {advocate.degree}
       </td>
-      <td className="px-6 py-4 text-sm text-gray-500 relative">
+      <td className="w-64 px-4 py-4 text-sm text-gray-600 border-r border-gray-200 relative">
         <div className="space-y-1">
           {advocate.specialties.slice(0, 2).map((s, i) => (
             <div
               key={`${advocate.firstName}-${advocate.lastName}-${s}-${i}`}
-              className="text-xs bg-gray-100 px-2 py-1 rounded inline-block mr-1 mb-1"
+              className="text-xs bg-gray-100 px-2 py-1 rounded inline-block mr-1 mb-1 truncate max-w-28"
             >
               {s}
             </div>
@@ -60,7 +60,7 @@ const AdvocateRow = memo(({ advocate, openTooltip, onTooltipToggle }: {
                 +{advocate.specialties.length - 2} more...
               </button>
               {showTooltip && (
-                <div className="absolute z-10 bg-white border border-gray-200 rounded-lg shadow-lg p-3 mt-1 min-w-64 max-w-80">
+                <div className="absolute z-10 bg-white border border-gray-200 rounded-lg shadow-lg p-3 mt-1 min-w-64 max-w-80 left-0">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-sm font-medium text-gray-900">All Specialties</span>
                     <button
@@ -86,10 +86,10 @@ const AdvocateRow = memo(({ advocate, openTooltip, onTooltipToggle }: {
           )}
         </div>
       </td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+      <td className="w-24 px-4 py-4 text-sm text-gray-600 border-r border-gray-200 text-center">
         {advocate.yearsOfExperience}
       </td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+      <td className="w-40 px-4 py-4 text-sm text-gray-600">
         <a
           href={`tel:${advocate.phoneNumber}`}
           className="text-blue-600 hover:text-blue-800 hover:underline"
@@ -215,48 +215,44 @@ export default function Home() {
       </div>
 
       <div className="flex-1 flex flex-col border border-gray-200 rounded-lg overflow-hidden">
-        <div className="overflow-x-auto flex-1 flex flex-col">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50 sticky top-0">
+        <div className="flex-1 overflow-auto">
+          <table className="min-w-full table-fixed">
+            <thead className="bg-gray-100 sticky top-0 z-10 border-b-2 border-gray-300">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="w-32 px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wide border-r border-gray-300">
                   First Name
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="w-32 px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wide border-r border-gray-300">
                   Last Name
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="w-28 px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wide border-r border-gray-300">
                   City
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="w-24 px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wide border-r border-gray-300">
                   Degree
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="w-64 px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wide border-r border-gray-300">
                   Specialties
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Years of Experience
+                <th className="w-24 px-4 py-3 text-center text-sm font-semibold text-gray-700 uppercase tracking-wide border-r border-gray-300">
+                  Years
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="w-40 px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wide whitespace-nowrap">
                   Phone Number
                 </th>
               </tr>
             </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {advocates.map((advocate) => (
+                <AdvocateRow
+                  key={`${advocate.firstName}-${advocate.lastName}-${advocate.phoneNumber}`}
+                  advocate={advocate}
+                  openTooltip={openTooltip}
+                  onTooltipToggle={handleTooltipToggle}
+                />
+              ))}
+            </tbody>
           </table>
-          <div className="flex-1 overflow-y-auto">
-            <table className="min-w-full">
-              <tbody className="bg-white divide-y divide-gray-200">
-                {advocates.map((advocate) => (
-                  <AdvocateRow
-                    key={`${advocate.firstName}-${advocate.lastName}-${advocate.phoneNumber}`}
-                    advocate={advocate}
-                    openTooltip={openTooltip}
-                    onTooltipToggle={handleTooltipToggle}
-                  />
-                ))}
-              </tbody>
-            </table>
-          </div>
         </div>
       </div>
 
